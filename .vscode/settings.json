@@ -1,0 +1,19 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "files.exclude": {
+        "out": false, // set this to true to hide the "out" folder with the compiled JS files
+        "dist": false // set this to true to hide the "dist" folder with the compiled JS files
+    },
+    "search.exclude": {
+        "dist": true,
+        "out": true
+    },
+    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
+    "typescript.tsc.autoDetect": "off",
+    "cSpell.words": [
+        "Labelizer",
+        "sfdx"
+    ],
+    "search.useGlobalIgnoreFiles": false,
+    "search.useIgnoreFiles": false
+}
