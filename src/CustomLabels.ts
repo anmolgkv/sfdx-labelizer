@@ -17,9 +17,9 @@ export default class {
 
         this.CustomLabels = new CustomLabels(
             labels.map((label: any) => new Label(
-                label.fullName._text,
-                label.categories._text,
-                label.value._text
+                label.fullName?._text,
+                label.categories?._text,
+                label.value?._text
             ))
         );
     }

@@ -2,7 +2,7 @@
   "name": "sfdx-labelizer",
   "displayName": "SFDX Labelizer",
   "description": "",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "icon": "images/logo.png",
   "publisher": "anmolgkv",
   "engines": {
@@ -12,7 +12,11 @@
     "url": "https://github.com/anmolgkv/sfdx-labelizer"
   },
   "categories": [
-    "Other"
+    "Snippets",
+    "Formatters",
+    "Keymaps",
+    "Programming Languages",
+    "Linters"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
@@ -20,7 +24,7 @@
     "commands": [
       {
         "command": "sfdxLabelizer.generateLabelFromSelection",
-        "title": "Convert to label"
+        "title": "SF: Convert to label"
       }
     ],
     "menus": {
