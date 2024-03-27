@@ -7,11 +7,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	try {
 		const command = vscode.commands
-			.registerCommand('sfdxLabelizer.generateLabelFromSelection', () => {
-				new Labelizer().execute(labelPath);
+			.registerCommand('sfdxLabelizer.generateLabelFromSelection', async () => {
+				await new Labelizer().execute(labelPath);
+				vscode.window.showInformationMessage(`Label added to ${labelPath}`);
 			});
 		context.subscriptions.push(command);
-		vscode.window.showInformationMessage(`Label added to ${labelPath}`);
 	} catch (error: any) {
 		vscode.window.showErrorMessage(`Error updating ${labelPath}: ${error.message}`);
 	}

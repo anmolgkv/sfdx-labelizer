@@ -1,4 +1,4 @@
-# sfdx-labelizer README
+# SFDX Labelizer for visual studio code
 
 This extension enables Visual Studio Code to easily generate custom labels from static text in an sfdx project.
 

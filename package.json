@@ -2,9 +2,13 @@
   "name": "sfdx-labelizer",
   "displayName": "SFDX Labelizer",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "publisher": "anmolgkv",
   "engines": {
     "vscode": "^1.87.0"
+  },
+  "repository": {
+    "url": "https://github.com/anmolgkv/sfdx-labelizer"
   },
   "categories": [
     "Other"
