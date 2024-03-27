@@ -76,7 +76,6 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@salesforce/source-deploy-retrieve": "^10.5.6",
     "mkdirp": "^3.0.1",
     "xml-js": "^1.6.11"
   }

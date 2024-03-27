@@ -81,13 +81,15 @@ export default class Labelizer {
 
 
     private getCategory(currentFilePath: string): string {
-        try {
-            const metadata: SourceComponent[] = new MetadataResolver().getComponentsFromPath(currentFilePath);
-
-            return metadata[0].type.name;
-        } catch (error) {
-            return 'Auto Generated label';
+        if(currentFilePath.includes('lwc')) {
+            return 'LightningComponentBundle';
+        } else if(currentFilePath.includes('aura')) {
+            return 'AuraDefinitionBundle';
+        } else if(currentFilePath.includes('class')) {
+            return 'ApexClass';
         }
+
+        return '';
     }
 
 
