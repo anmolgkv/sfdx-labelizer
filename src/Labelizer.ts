@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import { mkdirp } from 'mkdirp';
 import { js2xml } from 'xml-js';
 import CustomLabels from './CustomLabels';
-import { MetadataResolver, SourceComponent } from '@salesforce/source-deploy-retrieve';
 
 export default class Labelizer {
     public static DEFAULT_FILE_PATH = './force-app/main/default/labels/CustomLabels.labels-meta.xml';

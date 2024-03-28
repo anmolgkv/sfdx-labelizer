@@ -1,7 +1,9 @@
 import { xml2js } from "xml-js";
 
 export default class {
+    public _declaration!: Declaration;
     public CustomLabels!: CustomLabels;
+
 
     // CONSTRUCTOR
 
@@ -16,12 +18,10 @@ export default class {
                 : [];
 
         this.CustomLabels = new CustomLabels(
-            labels.map((label: any) => new Label(
-                label.fullName?._text,
-                label.categories?._text,
-                label.value?._text
-            ))
+            parsedObject.CustomLabels._attributes.xmlns,
+            labels.map((label: any) => new Label(label))
         );
+        this._declaration = new Declaration(parsedObject?._declaration?._attributes);
     }
 
 
@@ -32,7 +32,20 @@ export default class {
 
         try {
             if (!this.labelExists(apiName)) {
-                this.CustomLabels?.labels?.push(new Label(apiName, category, text));
+                this.CustomLabels?.labels?.push(new Label({
+                    fullName: {
+                        _text: apiName
+                    },
+                    categories: {
+                        _text: category
+                    },
+                    shortDescription: {
+                        _text: text
+                    },
+                    value: {
+                        _text: text
+                    }
+                }));
             }
         } catch (error: any) {
             throw new Error('Error updating CustomLabels.labels-meta.xml: ' + error.message);
@@ -64,11 +77,41 @@ export default class {
 
 // INNER
 
+export class Declaration {
+    _attributes?: Attribute;
+
+    constructor(_attributes: any) {
+        this._attributes = new Attribute(_attributes.version, _attributes.encoding);
+    }
+}
+
+export class Attribute {
+    version?: string;
+    encoding?: string;
+
+    constructor(version?: string, encoding?: string) {
+        this.version = version;
+        this.encoding = encoding;
+    }
+
+}
+
+
 export class CustomLabels {
     labels?: Label[];
+    _attributes?: LabelAttribute;
 
-    constructor(labels: Label[] = []) {
+    constructor(xmlns: string, labels: Label[] = []) {
+        this._attributes = new LabelAttribute(xmlns);
         this.labels = labels;
+    }
+}
+
+export class LabelAttribute {
+    xmlns?: string;
+
+    constructor(xmlns: string) {
+        this.xmlns = xmlns;
     }
 }
 
@@ -81,14 +124,13 @@ export class Label {
     shortDescription!: Property;
     value!: Property;
 
-
-    constructor(fullName: string, categories: string, value: string) {
-        this.fullName = new Property(fullName);
-        this.categories = new Property(categories);
-        this.language = new Property('en_us');
-        this.protected = new Property('true');
-        this.shortDescription = new Property(value);
-        this.value = new Property(value);
+    constructor(label: any) {
+        this.fullName = new Property(label.fullName?._text);
+        this.categories = new Property(label.categories?._text);
+        this.language = new Property(label.protected?.language || 'en_us');
+        this.protected = new Property(label.protected?._text || 'true');
+        this.shortDescription = new Property(label.shortDescription?._text);
+        this.value = new Property(label.value?._text);
     }
 }
 
@@ -97,6 +139,6 @@ export class Property {
     _text!: string;
 
     constructor(text: string) {
-        this._text = text;
+        this._text = text || '';
     }
 }
