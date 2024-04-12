@@ -127,7 +127,7 @@ export class Label {
     constructor(label: any) {
         this.fullName = new Property(label.fullName?._text);
         this.categories = new Property(label.categories?._text);
-        this.language = new Property(label.protected?.language || 'en_us');
+        this.language = new Property(label.protected?.language || 'en_US');
         this.protected = new Property(label.protected?._text || 'true');
         this.shortDescription = new Property(label.shortDescription?._text);
         this.value = new Property(label.value?._text);

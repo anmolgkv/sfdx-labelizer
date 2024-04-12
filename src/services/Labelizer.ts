@@ -1,10 +1,11 @@
-import path from 'path';
+import { dirname } from 'path';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 
 import { mkdirp } from 'mkdirp';
 import { js2xml } from 'xml-js';
-import CustomLabels from './CustomLabels';
+import CustomLabels from '../utils/CustomLabels';
+import { getCategory } from '../utils/File';
 
 export default class Labelizer {
     public static DEFAULT_FILE_PATH = './force-app/main/default/labels/CustomLabels.labels-meta.xml';
@@ -57,11 +58,11 @@ export default class Labelizer {
 
     private async updateCustomLabelsXML(text: string, labelPath: string): Promise<any> {
         const currentFilePath = this.editor.document.fileName;
-        const category = this.getCategory(currentFilePath);
+        const category = getCategory(currentFilePath);
 
         // Note: Create directory if it doesn't exist
         if (!fs.existsSync(labelPath)) {
-            const directory = path.dirname(labelPath);
+            const directory = dirname(labelPath);
             await mkdirp(directory);
         }
 
@@ -76,19 +77,6 @@ export default class Labelizer {
         fs.writeFileSync(labelPath, updatedContent);
 
         return { apiName, category, currentFilePath };
-    }
-
-
-    private getCategory(currentFilePath: string): string {
-        if(currentFilePath.includes('lwc')) {
-            return 'LightningComponentBundle';
-        } else if(currentFilePath.includes('aura')) {
-            return 'AuraDefinitionBundle';
-        } else if(currentFilePath.includes('class')) {
-            return 'ApexClass';
-        }
-
-        return '';
     }
 
 

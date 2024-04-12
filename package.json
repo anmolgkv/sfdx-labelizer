@@ -9,7 +9,7 @@
     "vscode": "^1.87.0"
   },
   "repository": {
-    "url": "https://github.com/anmolgkv/sfdx-labelizer"
+    "url": "https://github.com/anmolgkv/sfdx-labelizer-vscode"
   },
   "categories": [
     "Snippets",
@@ -19,7 +19,7 @@
     "Linters"
   ],
   "activationEvents": [],
-  "main": "./dist/extension.js",
+	"main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
