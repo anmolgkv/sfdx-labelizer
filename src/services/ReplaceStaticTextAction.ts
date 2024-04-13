@@ -9,8 +9,13 @@ export default class ReplaceStaticTextAction implements vscode.CodeActionProvide
                 const quickFixAction = new vscode.CodeAction('Convert to label', vscode.CodeActionKind.QuickFix);
                 quickFixAction.diagnostics = [diagnostic];
                 quickFixAction.isPreferred = true;
-                quickFixAction.command = { command: 'sfdxLabelizer.generateLabelFromSelection', title: 'Convert to label', tooltip: 'This will replace this static text into a reusable label.' };
+                quickFixAction.command = { command: 'Labelizer.generateLabelFromSelection', title: 'Convert to label', tooltip: 'This will replace this static text into a reusable label.' };
                 actions.push(quickFixAction);
+
+                const ignoreAction = new vscode.CodeAction('Add to ignore list', vscode.CodeActionKind.QuickFix);
+                ignoreAction.diagnostics = [diagnostic];
+                ignoreAction.command = { command: 'Labelizer.addToIgnoreList', title: 'Add to ignore list', tooltip: 'This will add the static text to ignore list.' };
+                actions.push(ignoreAction);
             }
         }
 
@@ -18,11 +23,12 @@ export default class ReplaceStaticTextAction implements vscode.CodeActionProvide
     }
 
     resolveCodeAction(codeAction: vscode.CodeAction, _token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeAction> {
-        if(codeAction.command?.command !== 'sfdxLabelizer.generateLabelFromSelection' || !codeAction.diagnostics?.length) {
-            return null;
+        const command = codeAction.command?.command;
+        if((command === 'Labelizer.generateLabelFromSelection' || command === 'Labelizer.addToIgnoreList' )&& codeAction.diagnostics?.length) {
+            const diagnostic = codeAction.diagnostics[0];
+            this.selectText(diagnostic.range.start.line + 1, diagnostic.range.start.character + 2, diagnostic.range.end.line + 1, diagnostic.range.end.character + 2);
         }
-        const diagnostic = codeAction.diagnostics[0];
-        this.selectText(diagnostic.range.start.line + 1, diagnostic.range.start.character + 2, diagnostic.range.end.line + 1, diagnostic.range.end.character + 2);
+
         return null;
     }
 

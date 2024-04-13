@@ -2,7 +2,7 @@
   "name": "sfdx-labelizer",
   "displayName": "SFDX Labelizer",
   "description": "",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "icon": "images/logo.png",
   "publisher": "anmolgkv",
   "engines": {
@@ -23,17 +23,27 @@
   "contributes": {
     "commands": [
       {
-        "command": "sfdxLabelizer.generateLabelFromSelection",
-        "title": "SF: Convert to label"
+        "command": "Labelizer.generateLabelFromSelection",
+        "title": "Labelizer: Convert to label"
+      },
+      {
+        "command": "Labelizer.addToIgnoreList",
+        "title": "Labelizer: Add to ignore list"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "sfdxLabelizer.generateLabelFromSelection",
+          "command": "Labelizer.generateLabelFromSelection",
           "when": "editorHasSelection",
-          "group": "navigation",
+          "group": "Labelizer",
           "order": 1
+        },
+        {
+          "command": "Labelizer.addToIgnoreList",
+          "when": "editorHasSelection",
+          "group": "Labelizer",
+          "order": 2
         }
       ]
     },
@@ -41,10 +51,33 @@
       "type": "object",
       "title": "sfdx-labelizer Configuration",
       "properties": {
-        "sfdx-labelizer.labelPath": {
+        "labelizer.labelPath": {
           "type": "string",
           "default": "./force-app/main/default/labels/CustomLabels.labels-meta.xml",
           "description": "Path to custom label file"
+        },
+        "labelizer.ignoreList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "v.*",
+            "c.*",
+            "PMD.",
+            "*__c",
+            "aura:*",
+            "lightning:*",
+            "c:*",
+            "$A.*"
+          ],
+          "description": "List of patterns to be ignored",
+          "markdownDescription": "List of [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)) to be ignored"
+        },
+        "labelizer.enableScan": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically scan the opened file for static text"
         }
       }
     }

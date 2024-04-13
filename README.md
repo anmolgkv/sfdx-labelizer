@@ -9,4 +9,4 @@ Select any static text in your vs code extension and "Convert to label" to autom
 ## Extension Settings
 This extension contributes the following settings:
 
-* `sfdx-labelizer.labelPath`: "Path to custom label file"
+* `labelizer.labelPath`: "Path to custom label file"

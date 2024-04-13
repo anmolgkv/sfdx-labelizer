@@ -1,8 +1,12 @@
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 import Violation from "./schema/Violation";
+import { getAllIgnoredText } from '../services/IgnoreList';
 
 export default class HTMLScanner {
-    private readonly REGEX = /(?<=>)\s*([^<>{}\s]+(?:\s+[^<>{}\s]+)*)\s*(?=<)/g;
+    private readonly REGEX = /(?<=>)\s*([^<>{}\s]+(?:\s+[^<>{}\s]+)*)\s*(?=<)/gm;
+    private readonly ignoredTexts = getAllIgnoredText();
+    private readonly ignoredRegexps: string[] = vscode.workspace.getConfiguration('labelizer').get('ignoreList') || [];
 
     scan(filePath: string, _category: string): Violation[] {
         const fileContent = this.readFile(filePath);
@@ -13,7 +17,7 @@ export default class HTMLScanner {
         const staticStrings: Violation[] = [];
         let match;
         let position = 0;
-        while ((match = this.REGEX.exec(fileContent)) !== null) {
+        while ((match = this.REGEX.exec(fileContent)) !== null && !this.isIgnored(match[0])) {
             const stringValue = match[0].trim();
             const startPosition = fileContent.indexOf(stringValue, position);
 
@@ -23,13 +27,31 @@ export default class HTMLScanner {
                 filePath,
                 startLine: lineCount,
                 startColumn: columnCount,
-                endLine: lineCount,
+                endLine: lineCount + ((stringValue.split('\n').length || 1) - 1),
                 endColumn: columnCount + match[0].length,
                 stringValue
             });
         }
 
         return staticStrings;
+    }
+
+
+    private isIgnored(text: string): boolean {
+        const sanitizedText = this.removeQuotes(text);
+        return this.ignoredTexts[sanitizedText] || this.ignoredRegexps.some((pattern) => this.toRegexPattern(pattern).test(sanitizedText));
+    }
+
+
+    private toRegexPattern(globPattern: string) {
+        const escapedPattern = globPattern.replace(/[.+^$()|{}]/g, '\\$&');
+
+        // Replace '*' with '.*' and '?' with '.' for regex
+        const regexPattern = escapedPattern
+            .replace(/\*/g, '.*')
+            .replace(/\?/g, '.');
+
+        return new RegExp('^' + regexPattern + '$');
     }
 
     private readFile(filePath: string): string | null {
@@ -47,4 +69,8 @@ export default class HTMLScanner {
         return { lineCount, columnCount };
     }
 
+
+    private removeQuotes(text: string) {
+        return text.replace(/^['"]|['"]$/g, '');
+    }
 }

@@ -1,10 +1,15 @@
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 import Violation from "./schema/Violation";
+import { getAllIgnoredText } from '../services/IgnoreList';
 
 export default class JSApexScanner {
-    private readonly STATIC_STRING_REGEX = /(['"`])(.*?)\1/g;
-    private readonly AURA_STATIC_STRING_REGEX = /(['"])(?:(?!\$A\.get\(".*?"\)).)*?\1/g;
-    private readonly FUNCTION_REGEX = /(?:function\s*\(.*\)\s*{(?:[^"'$A]*|(["'])(?:(?!\1).|\\[\s\S])*?\1)*\s*})/g;
+    private readonly STATIC_STRING_REGEX = /(['"`])(.*?)(?<!\\)\1/gm;
+    private readonly AURA_STATIC_STRING_REGEX = /(['"])(?:(?!\$A\.get\(".*?"\)).)*?\1/gm;
+    private readonly FUNCTION_REGEX = /(?:function\s*\(.*\)\s*{(?:[^"'$A]*|(["'])(?:(?!\1).|\\[\s\S])*?\1)*\s*})/gm;
+
+    private readonly ignoredTexts = getAllIgnoredText();
+    private readonly ignoredRegexps: string[] = vscode.workspace.getConfiguration('labelizer').get('ignoreList') || [];
 
     scan(filePath: string, category: string): Violation[] {
         const fileContent = this.readFile(filePath);
@@ -13,8 +18,8 @@ export default class JSApexScanner {
         }
 
         return (category === 'AuraDefinitionBundle')
-                    ? this.scanAuraJs(fileContent, filePath)
-                    : this.scanApex(fileContent, filePath);
+            ? this.scanAuraJs(fileContent, filePath)
+            : this.scanApex(fileContent, filePath);
     }
 
 
@@ -26,7 +31,7 @@ export default class JSApexScanner {
             const match = outerMatch[0];
 
             let innerMatch;
-            while (match && (innerMatch = this.AURA_STATIC_STRING_REGEX.exec(match)) !== null) {
+            while (match && (innerMatch = this.AURA_STATIC_STRING_REGEX.exec(match)) !== null && !this.isIgnored(innerMatch[0])) {
                 result.push(this.toViolation(fileContent, filePath, innerMatch, outerMatch.index));
             }
         }
@@ -46,7 +51,7 @@ export default class JSApexScanner {
         let match;
         while ((match = this.STATIC_STRING_REGEX.exec(fileContent)) !== null) {
             const startPosition = match.index;
-            if (startPosition > classIndex) {
+            if (startPosition > classIndex && !this.isIgnored(match[0])) {
                 result.push(this.toViolation(fileContent, filePath, match));
             }
         }
@@ -64,10 +69,28 @@ export default class JSApexScanner {
             filePath,
             startLine: lineCount,
             startColumn: columnCount,
-            endLine: lineCount,
+            endLine: lineCount + ((stringValue.split('\n').length || 1) - 1),
             endColumn: columnCount + match[0].length,
             stringValue
         };
+    }
+
+
+    private isIgnored(text: string): boolean {
+        const sanitizedText = this.removeQuotes(text);
+        return this.ignoredTexts[sanitizedText] || this.ignoredRegexps.some((pattern) => this.toRegexPattern(pattern).test(sanitizedText));
+    }
+
+
+    private toRegexPattern(globPattern: string) {
+        const escapedPattern = globPattern.replace(/[.+^$()|{}]/g, '\\$&');
+
+        // Replace '*' with '.*' and '?' with '.' for regex
+        const regexPattern = escapedPattern
+            .replace(/\*/g, '.*')
+            .replace(/\?/g, '.');
+
+        return new RegExp('^' + regexPattern + '$');
     }
 
 
@@ -85,5 +108,10 @@ export default class JSApexScanner {
         const columnCount = startPosition - fileContent.lastIndexOf('\n', startPosition) - 1;
 
         return { lineCount, columnCount };
+    }
+
+
+    private removeQuotes(text: string) {
+        return text.replace(/^['"]|['"]$/g, '');
     }
 }
