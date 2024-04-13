@@ -17,7 +17,7 @@ export default class HTMLScanner {
         const staticStrings: Violation[] = [];
         let match;
         let position = 0;
-        while ((match = this.REGEX.exec(fileContent)) !== null && !this.isIgnored(match[0])) {
+        while ((match = this.REGEX.exec(fileContent)) !== null && match[0] && !this.isIgnored(match[0])) {
             const stringValue = match[0].trim();
             const startPosition = fileContent.indexOf(stringValue, position);
 
@@ -71,6 +71,6 @@ export default class HTMLScanner {
 
 
     private removeQuotes(text: string) {
-        return text.replace(/^['"]|['"]$/g, '');
+        return text.replace(/^['"`]|['"`]$/g, '');
     }
 }

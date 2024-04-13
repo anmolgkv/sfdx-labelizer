@@ -12,10 +12,7 @@
     "url": "https://github.com/anmolgkv/sfdx-labelizer-vscode"
   },
   "categories": [
-    "Snippets",
     "Formatters",
-    "Keymaps",
-    "Programming Languages",
     "Linters"
   ],
   "activationEvents": [],
@@ -49,7 +46,7 @@
     },
     "configuration": {
       "type": "object",
-      "title": "sfdx-labelizer Configuration",
+      "title": "SFDX Labelizer",
       "properties": {
         "labelizer.labelPath": {
           "type": "string",
@@ -64,12 +61,21 @@
           "default": [
             "v.*",
             "c.*",
-            "PMD.",
-            "*__c",
+            "PMD.*",
             "aura:*",
             "lightning:*",
             "c:*",
-            "$A.*"
+            "utility:*",
+            "$*",
+            "c-*",
+            "*__*",
+            "slds-*",
+            "&nbsp;*",
+            "success",
+            "error",
+            "warning",
+            "inverse",
+            "bare"
           ],
           "description": "List of patterns to be ignored",
           "markdownDescription": "List of [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)) to be ignored"

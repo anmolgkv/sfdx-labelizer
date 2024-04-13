@@ -31,7 +31,7 @@ export default class JSApexScanner {
             const match = outerMatch[0];
 
             let innerMatch;
-            while (match && (innerMatch = this.AURA_STATIC_STRING_REGEX.exec(match)) !== null && !this.isIgnored(innerMatch[0])) {
+            while (match && (innerMatch = this.AURA_STATIC_STRING_REGEX.exec(match)) !== null && innerMatch[0] && !this.isIgnored(innerMatch[0])) {
                 result.push(this.toViolation(fileContent, filePath, innerMatch, outerMatch.index));
             }
         }
@@ -51,7 +51,7 @@ export default class JSApexScanner {
         let match;
         while ((match = this.STATIC_STRING_REGEX.exec(fileContent)) !== null) {
             const startPosition = match.index;
-            if (startPosition > classIndex && !this.isIgnored(match[0])) {
+            if (startPosition > classIndex && match[0] && !this.isIgnored(match[0])) {
                 result.push(this.toViolation(fileContent, filePath, match));
             }
         }
