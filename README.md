@@ -16,8 +16,6 @@ This extension provides easy way to detect and fix static text referenced in a s
 #### Manually select and fix/add to ignore list ####
   ![Auto detect and fix](images/manuallySelectAndFix.gif)
 
-## Configuration options ##
-  ![Configure](images/configure.gif)
 
 ## Extension Settings
 This extension contributes the following settings:
@@ -25,3 +23,5 @@ This extension contributes the following settings:
 * `Labelizer: Enable Scan`: "Auto scan files for static texts"
 * `Labelizer: Ignore List`: "List of glob patterns to be ignored"
 * `Labelizer: Label Path`: "Path to custom label file"
+
+![Configure](images/configure.gif)
