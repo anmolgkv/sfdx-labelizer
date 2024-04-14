@@ -2,7 +2,7 @@
   "name": "sfdx-labelizer",
   "displayName": "SFDX Labelizer",
   "description": "",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "icon": "images/logo.png",
   "publisher": "anmolgkv",
   "engines": {
@@ -83,7 +83,7 @@
         "labelizer.enableScan": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically scan the opened file for static text"
+          "description": "Automatically scan the opened file for static text(Will reload extension host)"
         }
       }
     }

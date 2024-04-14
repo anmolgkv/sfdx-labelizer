@@ -3,17 +3,21 @@
 This extension enables Visual Studio Code to easily generate custom labels from static text in an sfdx project.
 
 ## Features
-This extension provides easy way to detect and fix and static text referenced in a sfdx project for following metadata:
-    1. LWC component
-    2. Aura Component
-    3. Apex classes
-* Auto scan and detect static texts in a file.
-* Provide quick fix option "Convert to label" to automatically generate a custom label and replace existing text with label.
-* Provide quick fix option "Add to ignore list"
-* Select any static text in your vs code extension and "Convert to label" to automatically generate a custom label and replace existing text with label.
+This extension provides easy way to detect and fix static text referenced in a sfdx project for following metadata:
+  - LWC component
+  - Aura Component
+  - Apex classes
 
-  ![Auto detect and fix1](images/Demo1.gif)
-  ![Auto detect and fix2](images/Demo2.gif)
+## Demo ##
+
+#### Auto detect and fix/add to ignore list ####
+  ![Auto detect and fix](images/autoDetectAndFix.gif)
+
+#### Manually select and fix/add to ignore list ####
+  ![Auto detect and fix](images/manuallySelectAndFix.gif)
+
+## Configuration options ##
+  ![Configure](images/configure.gif)
 
 ## Extension Settings
 This extension contributes the following settings:

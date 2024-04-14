@@ -73,7 +73,9 @@ export default class Labelizer {
         const customLabelsJSON = new CustomLabels(existingContent);
 
         const apiName = customLabelsJSON.add(text, category);
-        const updatedContent = js2xml(customLabelsJSON, { compact: true, spaces: 4 });
+        // NOTE: this step is needed to suppress empty categories
+        const sanitizedJson = JSON.parse(JSON.stringify(customLabelsJSON));
+        const updatedContent = js2xml(sanitizedJson, { compact: true, spaces: 4 });
         fs.writeFileSync(labelPath, updatedContent);
 
         return { apiName, category, currentFilePath };

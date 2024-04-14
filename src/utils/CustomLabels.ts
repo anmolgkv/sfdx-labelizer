@@ -118,18 +118,18 @@ export class LabelAttribute {
 
 export class Label {
     fullName!: Property;
-    categories!: Property;
+    categories?: Property;
     language!: Property;
     protected!: Property;
-    shortDescription!: Property;
+    shortDescription?: Property;
     value!: Property;
 
     constructor(label: any) {
         this.fullName = new Property(label.fullName?._text);
-        this.categories = new Property(label.categories?._text);
+        this.categories = label.categories?._text ? new Property(label.categories?._text) : undefined;
         this.language = new Property(label.protected?.language || 'en_US');
         this.protected = new Property(label.protected?._text || 'true');
-        this.shortDescription = new Property(label.shortDescription?._text);
+        this.shortDescription = label.shortDescription?._text ? new Property(label.shortDescription?._text) : undefined;
         this.value = new Property(label.value?._text);
     }
 }
