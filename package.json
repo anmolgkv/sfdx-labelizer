@@ -15,9 +15,14 @@
     "Formatters",
     "Linters"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:html",
+    "onLanguage:apex",
+    "onLanguage:javascript"
+  ],
 	"main": "./dist/extension.js",
   "contributes": {
+    "workspaceRoot": true,
     "commands": [
       {
         "command": "Labelizer.generateLabelFromSelection",

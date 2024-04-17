@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import Labelizer from './services/Labelizer';
 import LabelScanner from './services/LabelScanner';
-import ReplaceStaticTextAction from './services/ReplaceStaticTextAction';
 import { addToIgnoreList } from './services/IgnoreList';
+import ReplaceStaticTextAction from './services/ReplaceStaticTextAction';
+import LabelDefinitionProvider from './services/LabelDefinitionProvider';
 
 let diagnosticCollection: vscode.DiagnosticCollection | undefined;
 
@@ -38,6 +39,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	const documentSelector: vscode.DocumentSelector = { pattern: '**/*.{html,js,cls,cmp}', scheme: 'file' };
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider(documentSelector, new ReplaceStaticTextAction())
+	);
+
+	context.subscriptions.push(
+        vscode.languages.registerDefinitionProvider(documentSelector, new LabelDefinitionProvider())
 	);
 
 	vscode.workspace.onDidChangeConfiguration(async (event) => {
