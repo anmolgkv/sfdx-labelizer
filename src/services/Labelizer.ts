@@ -118,7 +118,11 @@ export default class Labelizer {
                 const labelVars = labelDeclaration[1].split(',');
 
                 if (!labelVars.some(labelVar => labelVar.trim() === labelNameToImport)) {
-                    modifiedContents = modifiedContents.replace(labelDeclaration[0], `label = {${labelVars.join(', ')}, ${labelNameToImport}}`);
+                    const updatedLabel = `label = {
+        ${labelVars.map((label) => label.trim()).join(',\n\t\t')},
+        ${labelNameToImport}
+    }`;
+                    modifiedContents = modifiedContents.replace(labelDeclaration[0], updatedLabel);
                 }
             } else {
                 // Create new label object after class declaration
