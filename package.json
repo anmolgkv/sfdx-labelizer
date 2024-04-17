@@ -2,7 +2,7 @@
   "name": "sfdx-labelizer",
   "displayName": "SFDX Labelizer",
   "description": "",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "icon": "images/logo.png",
   "publisher": "anmolgkv",
   "engines": {
@@ -15,9 +15,14 @@
     "Formatters",
     "Linters"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:html",
+    "onLanguage:apex",
+    "onLanguage:javascript"
+  ],
 	"main": "./dist/extension.js",
   "contributes": {
+    "workspaceRoot": true,
     "commands": [
       {
         "command": "Labelizer.generateLabelFromSelection",
