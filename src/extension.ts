@@ -14,8 +14,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const fixCommand = vscode.commands
 		.registerCommand('Labelizer.generateLabelFromSelection', async () => {
-			await new Labelizer().execute(labelPath);
-			vscode.window.showInformationMessage(`Label added to ${labelPath}`);
+			const { apiName, category, value } = await new Labelizer().execute(labelPath);
+			vscode.window.showInformationMessage(`Label added to ${labelPath} \n\r API Name: "${apiName}" \n\r category: "${category}"`);
+			if(value.length > 80) {
+				vscode.window.showWarningMessage('We have truncated the API name and short description');
+			}
 		});
 	context.subscriptions.push(fixCommand);
 
