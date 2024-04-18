@@ -62,13 +62,23 @@ export default class {
     }
 
 
-    private toApiName(text: string): string {
+    private toApiName(text: string = ''): string {
         return text
-            .replace(/[^\w\s]/gi, ' ')
             .trim()
-            .split(/\s+/)
-            .map((word, index) => index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join('')
+            // Replace non-alphanumeric characters with underscores
+            .replace(/[^a-zA-Z0-9]+/g, '_')
+            // Remove consecutive underscores
+            .replace(/_+/g, '_')
+            // Remove leading underscores
+            .replace(/^_+/g, '')
+            // Remove trailing underscores
+            .replace(/_+$/g, '')
+            // Ensure the API name begins with a letter
+            .replace(/^[^a-zA-Z]/, 'a_$&')
+            // Ensure the API name is not empty
+            .replace(/^$/, 'default_name')
+            // Ensure the API name does not end with an underscore
+            .replace(/_$/, '')
             .substring(0, 40);
     }
 
