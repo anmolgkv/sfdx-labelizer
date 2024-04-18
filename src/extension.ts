@@ -17,7 +17,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			const { apiName, category, value } = await new Labelizer().execute(labelPath);
 			vscode.window.showInformationMessage(`Label added to ${labelPath} \n\r API Name: "${apiName}" \n\r category: "${category}"`);
 			if(value.length > 80) {
-				vscode.window.showWarningMessage('We have truncated the API name and short description');
+				vscode.window.showWarningMessage('The API name and short description has been truncated to ensure compatibility and readability. If you find that this truncated name doesn\'t fully capture the essence of your label, you can modify it manually.');
 			}
 		});
 	context.subscriptions.push(fixCommand);
