@@ -4,7 +4,7 @@ import Violation from "./schema/Violation";
 import { getAllIgnoredText } from '../services/IgnoreList';
 
 export default class JSApexScanner {
-    private readonly STATIC_STRING_REGEX = /(['"`])([\s\S]*?)(?<!\\)\1/gm;
+    private readonly STATIC_STRING_REGEX = /(?:^|(?<!\/\/.*?))(['"`])([\s\S]*?)(?<!\\)\1/gm;
     private readonly AURA_STATIC_STRING_REGEX = /(['"])(?:(?!\$A\.get\("[\s\S]*?"\)).)*?\1/gm;
     private readonly FUNCTION_REGEX = /(?:function\s*\(.*\)\s*{(?:[^"'$A]*|(["'])(?:(?!\1).|\\[\s\S])*?\1)*\s*})/gm;
 
