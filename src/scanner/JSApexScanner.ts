@@ -4,8 +4,8 @@ import Violation from "./schema/Violation";
 import { getAllIgnoredText } from '../services/IgnoreList';
 
 export default class JSApexScanner {
-    private readonly STATIC_STRING_REGEX = /(['"`])(.*?)(?<!\\)\1/gm;
-    private readonly AURA_STATIC_STRING_REGEX = /(['"])(?:(?!\$A\.get\(".*?"\)).)*?\1/gm;
+    private readonly STATIC_STRING_REGEX = /(['"`])([\s\S]*?)(?<!\\)\1/gm;
+    private readonly AURA_STATIC_STRING_REGEX = /(['"])(?:(?!\$A\.get\("[\s\S]*?"\)).)*?\1/gm;
     private readonly FUNCTION_REGEX = /(?:function\s*\(.*\)\s*{(?:[^"'$A]*|(["'])(?:(?!\1).|\\[\s\S])*?\1)*\s*})/gm;
 
     private readonly ignoredTexts = getAllIgnoredText();
@@ -112,6 +112,8 @@ export default class JSApexScanner {
 
 
     private removeQuotes(text: string) {
-        return text.replace(/^['"]|['"]$/g, '');
+        const result = text.replace(/^['"`]|['"`]$/g, '');
+
+        return result.endsWith('`;') ? result.substring(0, result.length - 2) : result;
     }
 }

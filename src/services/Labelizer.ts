@@ -85,7 +85,9 @@ export default class Labelizer {
 
 
     private removeQuotes(text: string) {
-        return text.replace(/^['"]|['"]$/g, '');
+        const result = text.replace(/^['"`]|['"`]$/g, '');
+
+        return result.endsWith('`;') ? result.substring(0, result.length-2) : result;
     }
 
 

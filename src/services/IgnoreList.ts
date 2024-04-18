@@ -44,5 +44,7 @@ export function getAllIgnoredText(): any {
 
 
 function removeQuotes(text: string) {
-    return text.replace(/^['"]|['"]$/g, '');
+    const result = text.replace(/^['"`]|['"`]$/g, '');
+
+    return result.endsWith('`;') ? result.substring(0, result.length-2) : result;
 }
