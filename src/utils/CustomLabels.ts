@@ -40,7 +40,7 @@ export default class {
                         _text: category
                     },
                     shortDescription: {
-                        _text: text
+                        _text: text.substring(0, 80)
                     },
                     value: {
                         _text: text
@@ -68,7 +68,8 @@ export default class {
             .trim()
             .split(/\s+/)
             .map((word, index) => index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join('');
+            .join('')
+            .substring(0, 40);
     }
 
 

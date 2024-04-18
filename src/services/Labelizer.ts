@@ -51,6 +51,8 @@ export default class Labelizer {
 
             this.editor.edit(editBuilder => editBuilder.replace(this.selection, `{label.${apiName}}`));
         }
+
+        return { apiName, category, value: this.selectedText };
     }
 
 
