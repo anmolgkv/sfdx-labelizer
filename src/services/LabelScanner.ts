@@ -4,7 +4,7 @@ import StaticTextScanner from '../scanner/StaticTextScanner';
 
 export default class LabelScanner {
     editor: vscode.TextEditor;
-
+    static diagnosticCollection = vscode.languages.createDiagnosticCollection('labelizer-diagnostics');
     // CONSTRUCTOR
 
     constructor(editor: vscode.TextEditor) {
@@ -16,11 +16,10 @@ export default class LabelScanner {
 
     execute() : vscode.DiagnosticCollection {
         const violations = new StaticTextScanner().scan(this.editor.document.fileName);
-        const diagnosticCollection = vscode.languages.createDiagnosticCollection('labelizer-diagnostics');
 
-        diagnosticCollection.set(this.editor.document.uri, this.toDiagnostics(violations));
+        LabelScanner.diagnosticCollection.set(this.editor.document.uri, this.toDiagnostics(violations));
 
-        return diagnosticCollection;
+        return LabelScanner.diagnosticCollection;
     }
 
 

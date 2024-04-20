@@ -1,4 +1,8 @@
 import { xml2js } from "xml-js";
+import * as vscode from 'vscode';
+
+const DEFAULT_LANGUAGE = vscode.workspace.getConfiguration('labelizer').get('language', 'en_US');
+const promptForConfirmation = vscode.workspace.getConfiguration('labelizer').get('promptForConfirmation', false);
 
 export default class {
     public _declaration!: Declaration;
@@ -13,9 +17,7 @@ export default class {
         // Note: Ensure labels is always an array
         const labels = Array.isArray(parsedObject.CustomLabels.labels)
             ? parsedObject.CustomLabels.labels
-            : parsedObject.CustomLabels.labels
-                ? [parsedObject.CustomLabels.labels]
-                : [];
+            : (parsedObject.CustomLabels.labels ? [parsedObject.CustomLabels.labels] : []);
 
         this.CustomLabels = new CustomLabels(
             parsedObject.CustomLabels._attributes.xmlns,
@@ -27,24 +29,19 @@ export default class {
 
     // PUBLIC
 
-    add(text: string, category: string): string {
-        const apiName = this.toApiName(text);
-
+    async add(text: string, iCategory: string): Promise<string> {
+        const { apiName, shortDescription, language, isProtected, category } = promptForConfirmation
+            ? this.sanitizeUserInput(await this.confirmInput(this.getDefaultLabel(text, iCategory)))
+            : this.sanitizeUserInput(this.getDefaultLabel(text, iCategory));
         try {
             if (!this.labelExists(apiName)) {
                 this.CustomLabels?.labels?.push(new Label({
-                    fullName: {
-                        _text: apiName
-                    },
-                    categories: {
-                        _text: category
-                    },
-                    shortDescription: {
-                        _text: text.substring(0, 80)
-                    },
-                    value: {
-                        _text: text
-                    }
+                    value: new Property(text),
+                    fullName: new Property(apiName),
+                    language: new Property(language),
+                    categories: new Property(category),
+                    protected: new Property(isProtected),
+                    shortDescription: new Property(shortDescription)
                 }));
             }
         } catch (error: any) {
@@ -55,7 +52,166 @@ export default class {
     }
 
 
+    sort() {
+        this.CustomLabels.labels = this.CustomLabels?.labels?.sort((a, b) => a.fullName._text.localeCompare(b.fullName._text));
+    }
+
+
     // PRIVATE
+
+    private getDefaultLabel(text: string, category: string): WebviewInput {
+        return {
+            apiName: this.toApiName(text),
+            category,
+            shortDescription: text.substring(0, 80),
+            language: DEFAULT_LANGUAGE,
+            isProtected: true
+        };
+    }
+
+
+    private sanitizeUserInput(input: WebviewInput) {
+        return {
+            isProtected: input.isProtected.toString(),
+            apiName: this.toApiName(input.apiName),
+            language: input.language.trim(),
+            category: input.category.trim(),
+            shortDescription: input.shortDescription.trim().substring(0, 80)
+        };
+    }
+
+
+    private confirmInput(input: WebviewInput): Promise<WebviewInput> {
+        return new Promise((resolve) => {
+            const panel = vscode.window.createWebviewPanel(
+                'inputModal',
+                `Confirm Label`,
+                vscode.ViewColumn.Beside,
+                {
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
+            );
+
+            const css = `
+                body {
+                    background-color: var(--vscode-background);
+                }
+
+                .form-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin-top: 50px;
+                }
+
+                .input-group {
+                    width: 65vw;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    margin-bottom: 10px;
+                }
+
+                .input-group label {
+                    width: 100px;
+                    margin-right: 10px;
+                    font-weight: bold;
+                    text-align: right;
+                }
+
+                .input-group input {
+                    flex: 1;
+                    padding: 5px;
+                    border-radius: 3px;
+                    background: var(--vscode-input-background);
+                    color: var(--vscode-input-foreground);
+                    border: var(--vscode-input-border);
+                }
+
+                .button {
+                    padding: 8px 16px;
+                    background-color: var(--vscode-button-background);
+                    color: var(--vscode-button-foreground);
+                    border: none;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    width: 20vw;
+                    transition: background-color 0.3s;
+                }
+
+                .button:hover {
+                    background-color: var(--vscode-button-hoverBackground);
+                }
+            `;
+
+            const script = `
+                function submitInputs() {
+                    const vscode = acquireVsCodeApi();
+                    const apiName = document.getElementById('apiName').value;
+                    const category = document.getElementById('category').value;
+                    const language = document.getElementById('language').value;
+                    const shortDescription = document.getElementById('shortDescription').value;
+                    const isProtected = document.getElementById('isProtected').checked;
+
+                    vscode.postMessage({ command: 'submitInputs', inputs: { apiName, category, language, shortDescription, isProtected } });
+                }
+            `;
+
+            const html = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Confirm Label</title>
+                    <style>${css}</style>
+                    <script>${script}</script>
+                </head>
+                <body>
+                    <div class="form-container">
+                        <div class="input-group">
+                            <label for="apiName">Full Name</label>
+                            <input id="apiName" type="text" placeholder="Full Name" value="${input.apiName}" /><br>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="category">Category</label>
+                            <input id="category" type="text" placeholder="Category" value="${input.category}" /><br>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="language">Language</label>
+                            <input id="language" type="text" placeholder="Language" value="${input.language}" /><br>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="shortDescription">Description</label>
+                            <input id="shortDescription" type="text" placeholder="Description" value="${input.shortDescription}" /><br>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="isProtected">Protected</label>
+                            <input id="isProtected" type="checkbox" placeholder="Protected" checked=${input.isProtected} /><br>
+                        </div>
+
+                        <button class="button" onclick="submitInputs()">Confirm</button>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            panel.webview.html = html;
+
+            panel.webview.onDidReceiveMessage(message => {
+                if (message.command === 'submitInputs') {
+                    resolve(message.inputs);
+                    panel.dispose();
+                }
+            });
+        });
+    }
+
 
     private labelExists(apiName: string): boolean {
         return !!this.CustomLabels?.labels?.some((label: any) => label.fullName._text === apiName);
@@ -81,12 +237,19 @@ export default class {
             .replace(/_$/, '')
             .substring(0, 40);
     }
-
-
 }
 
 
 // INNER
+
+interface WebviewInput {
+    apiName: string;
+    category: string;
+    shortDescription: string;
+    language: string;
+    isProtected: boolean;
+}
+
 
 export class Declaration {
     _attributes?: Attribute;
@@ -138,8 +301,8 @@ export class Label {
     constructor(label: any) {
         this.fullName = new Property(label.fullName?._text);
         this.categories = label.categories?._text ? new Property(label.categories?._text) : undefined;
-        this.language = new Property(label.protected?.language || 'en_US');
-        this.protected = new Property(label.protected?._text || 'true');
+        this.language = new Property(label.language?._text || DEFAULT_LANGUAGE);
+        this.protected = new Property(label.protected?._text);
         this.shortDescription = label.shortDescription?._text ? new Property(label.shortDescription?._text) : undefined;
         this.value = new Property(label.value?._text);
     }
