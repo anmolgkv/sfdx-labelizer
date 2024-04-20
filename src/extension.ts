@@ -4,6 +4,7 @@ import LabelScanner from './services/LabelScanner';
 import { addToIgnoreList } from './services/IgnoreList';
 import ReplaceStaticTextAction from './services/ReplaceStaticTextAction';
 import LabelDefinitionProvider from './services/LabelDefinitionProvider';
+import LabelReferenceProvider from './services/LabelReferenceProvider';
 
 let diagnosticCollection: vscode.DiagnosticCollection | undefined;
 
@@ -46,6 +47,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
         vscode.languages.registerDefinitionProvider(documentSelector, new LabelDefinitionProvider())
+	);
+
+	const xmlSelector: vscode.DocumentSelector = { pattern: '**/*.{labels-meta.xml}', scheme: 'file' };
+
+	context.subscriptions.push(
+        vscode.languages.registerReferenceProvider(xmlSelector, new LabelReferenceProvider())
 	);
 
 	vscode.workspace.onDidChangeConfiguration(async (event) => {

@@ -16,6 +16,7 @@
     "Linters"
   ],
   "activationEvents": [
+    "onLanguage:xml",
     "onLanguage:html",
     "onLanguage:apex",
     "onLanguage:javascript"
