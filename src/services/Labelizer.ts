@@ -68,13 +68,11 @@ export default class Labelizer {
             await mkdirp(directory);
         }
 
-        const existingContent = fs.existsSync(labelPath)
-            ? fs.readFileSync(labelPath, 'utf-8')
-            : Labelizer.DEFAULT_XML;
+        const existingContent = fs.existsSync(labelPath) ? fs.readFileSync(labelPath, 'utf-8') : Labelizer.DEFAULT_XML;
 
         const customLabelsJSON = new CustomLabels(existingContent);
-
-        const apiName = customLabelsJSON.add(text, category);
+        const apiName = await customLabelsJSON.add(text, category);
+        customLabelsJSON.sort();
         // NOTE: this step is needed to suppress empty categories
         const sanitizedJson = JSON.parse(JSON.stringify(customLabelsJSON));
         const updatedContent = js2xml(sanitizedJson, { compact: true, spaces: 4 });
@@ -87,7 +85,7 @@ export default class Labelizer {
     private removeQuotes(text: string) {
         const result = text.replace(/^['"`]|['"`]$/g, '');
 
-        return result.endsWith('`;') ? result.substring(0, result.length-2) : result;
+        return result.endsWith('`;') ? result.substring(0, result.length - 2) : result;
     }
 
 
@@ -102,42 +100,62 @@ export default class Labelizer {
 
     private async addImportAndLabelObjectVariable(filePath: string, labelNameToImport: string) {
         const fileContents = await fs.promises.readFile(filePath, 'utf8');
-        let modifiedContents = fileContents;
-        // Check if import statement exists
-        if (!modifiedContents.includes(`import ${labelNameToImport} from "@salesforce/label/c.${labelNameToImport}";`)) {
-            // Insert import statement at the beginning
-            modifiedContents = `import ${labelNameToImport} from "@salesforce/label/c.${labelNameToImport}";\n${fileContents}`;
-        }
+        let modifiedContents = this.addLabelImport(fileContents, labelNameToImport);
 
-        // Find the class declaration
-        const classDeclarationMatch = modifiedContents.match(/export default class (\w+)/);
-        const className = classDeclarationMatch?.[1];
+        const className = this.extractClassName(modifiedContents);
 
         if (className) {
-            // Check for existing label object or create it
-            const labelDeclaration = modifiedContents.match(/label = \{([^}]*)}/);
-
-            if (labelDeclaration) {
-                // Modify existing label object
-                const labelVars = labelDeclaration[1].split(',');
-
-                if (!labelVars.some(labelVar => labelVar.trim() === labelNameToImport)) {
-                    const updatedLabel = `label = {
-        ${labelVars.map((label) => label.trim()).join(',\n\t\t')},
-        ${labelNameToImport}
-    }`;
-                    modifiedContents = modifiedContents.replace(labelDeclaration[0], updatedLabel);
-                }
-            } else {
-                // Create new label object after class declaration
-                const classDeclarationEndIndex = modifiedContents.indexOf('{', modifiedContents.indexOf(classDeclarationMatch[0])) + 1;
-                modifiedContents = `${modifiedContents.slice(0, classDeclarationEndIndex)}\n\tlabel = { ${labelNameToImport} };\n${modifiedContents.slice(classDeclarationEndIndex)}`;
-            }
-
-            // Write the modified contents back to the file
+            modifiedContents = this.updateLabelDeclaration(modifiedContents, labelNameToImport);
             await fs.promises.writeFile(filePath, modifiedContents);
         } else {
             throw new Error(`Class declaration not found in ${filePath}`);
+        }
+    }
+
+
+    private updateLabelDeclaration(fileContents: string, labelNameToImport: string): string {
+        const labelDeclaration = fileContents.match(/label = \{([^}]*)}/);
+
+        if (labelDeclaration) {
+            const labelVars: string[] = labelDeclaration[1].split(',');
+
+            if (!labelVars.some(labelVar => labelVar.trim() === labelNameToImport)) {
+                const updatedLabel = `label = {
+        ${labelVars.map((label) => label.trim()).join(',\n\t\t')},
+        ${labelNameToImport}
+    }`;
+                fileContents = fileContents.replace(labelDeclaration[0], updatedLabel);
+            }
+        } else {
+            const classDeclarationEndIndex = fileContents.indexOf('{', fileContents.indexOf('export default class')) + 1;
+            fileContents = `${fileContents.slice(0, classDeclarationEndIndex)}\n\tlabel = { ${labelNameToImport} };\n${fileContents.slice(classDeclarationEndIndex)}`;
+        }
+
+        return fileContents;
+    }
+
+
+    private extractClassName(modifiedContents: string) {
+        const classDeclarationMatch = modifiedContents.match(/export default class (\w+)/);
+        return classDeclarationMatch?.[1];
+    }
+
+    private addLabelImport(fileContents: string, labelNameToImport: string): string {
+        const labelImportRegex = /import\s+[^;]+from\s+"@salesforce\/label\/c\.[^;]+";/g;
+        const regularImportRegex = /import\s+[^;]+from\s+[^;]+;/g;
+
+        const hasLabelImport = labelImportRegex.test(fileContents);
+        const hasRegularImport = regularImportRegex.test(fileContents);
+
+        if (hasLabelImport) {
+            const lastLabelImport = fileContents.match(labelImportRegex)!.pop()!;
+            return fileContents.replace(lastLabelImport, `${lastLabelImport}\nimport ${labelNameToImport} from "@salesforce/label/c.${labelNameToImport}";`);
+        } else if (hasRegularImport) {
+            const lastRegularImport = fileContents.match(regularImportRegex)!.pop()!;
+            const lastIndex = fileContents.lastIndexOf(lastRegularImport) + lastRegularImport.length;
+            return `${fileContents.slice(0, lastIndex)}\nimport ${labelNameToImport} from "@salesforce/label/c.${labelNameToImport}";${fileContents.slice(lastIndex)}`;
+        } else {
+            return `import ${labelNameToImport} from "@salesforce/label/c.${labelNameToImport}";\n${fileContents}`;
         }
     }
 }

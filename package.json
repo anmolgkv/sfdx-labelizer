@@ -89,6 +89,16 @@
           "type": "boolean",
           "default": true,
           "description": "Automatically scan the opened file for static text(Will reload extension host)"
+        },
+        "labelizer.promptForConfirmation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prompt user to confirm the Label API name, Category, Short description and Language for a new label"
+        },
+        "labelizer.language": {
+          "type": "string",
+          "default": "en_US",
+          "description": "Default language of label"
         }
       }
     }
