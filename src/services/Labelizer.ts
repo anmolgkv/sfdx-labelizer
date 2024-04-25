@@ -141,15 +141,14 @@ export default class Labelizer {
     }
 
     private addLabelImport(fileContents: string, labelNameToImport: string): string {
-        const labelImportRegex = /import\s+[^;]+from\s+"@salesforce\/label\/c\.[^;]+";/g;
+        const labelImportRegex = new RegExp(`import\\s+${labelNameToImport}\\s+from\\s+"@salesforce/label/c\\.${labelNameToImport}";`);
         const regularImportRegex = /import\s+[^;]+from\s+[^;]+;/g;
 
         const hasLabelImport = labelImportRegex.test(fileContents);
         const hasRegularImport = regularImportRegex.test(fileContents);
 
         if (hasLabelImport) {
-            const lastLabelImport = fileContents.match(labelImportRegex)!.pop()!;
-            return fileContents.replace(lastLabelImport, `${lastLabelImport}\nimport ${labelNameToImport} from "@salesforce/label/c.${labelNameToImport}";`);
+            return fileContents;
         } else if (hasRegularImport) {
             const lastRegularImport = fileContents.match(regularImportRegex)!.pop()!;
             const lastIndex = fileContents.lastIndexOf(lastRegularImport) + lastRegularImport.length;
