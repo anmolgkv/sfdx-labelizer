@@ -30,6 +30,12 @@ export default class {
     // PUBLIC
 
     async add(text: string, iCategory: string): Promise<string> {
+        const newApiName = this.toApiName(text);
+
+        if(this.labelExists(newApiName)) {
+            return newApiName;
+        }
+
         const { apiName, shortDescription, language, isProtected, category } = promptForConfirmation
             ? this.sanitizeUserInput(await this.confirmInput(this.getDefaultLabel(text, iCategory)))
             : this.sanitizeUserInput(this.getDefaultLabel(text, iCategory));
