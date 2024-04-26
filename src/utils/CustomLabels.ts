@@ -61,11 +61,12 @@ export default class {
 
     private getDefaultLabel(text: string, category: string): WebviewInput {
         return {
-            apiName: this.toApiName(text),
+            text,
             category,
-            shortDescription: text.substring(0, 80),
+            isProtected: true,
             language: DEFAULT_LANGUAGE,
-            isProtected: true
+            apiName: this.toApiName(text),
+            shortDescription: text.substring(0, 80),
         };
     }
 
@@ -82,6 +83,8 @@ export default class {
 
 
     private confirmInput(input: WebviewInput): Promise<WebviewInput> {
+        const labels = JSON.stringify(this.CustomLabels.labels);
+
         return new Promise((resolve) => {
             const panel = vscode.window.createWebviewPanel(
                 'inputModal',
@@ -106,7 +109,7 @@ export default class {
                 }
 
                 .input-group {
-                    width: 65vw;
+                    width: 85vw;
                     display: flex;
                     flex-direction: row;
                     align-items: center;
@@ -120,10 +123,14 @@ export default class {
                     text-align: right;
                 }
 
-                .input-group input {
+                .input-group .input-container {
                     flex: 1;
                     padding: 5px;
+                }
+
+                .input-group .input-container input {
                     border-radius: 3px;
+                    width: 85%;
                     background: var(--vscode-input-background);
                     color: var(--vscode-input-foreground);
                     border: var(--vscode-input-border);
@@ -143,18 +150,38 @@ export default class {
                 .button:hover {
                     background-color: var(--vscode-button-hoverBackground);
                 }
+
+                .hide {
+                    display:none;
+                }
+
+                .error {
+                    color: red;
+                }
             `;
 
             const script = `
+                const vscode = acquireVsCodeApi();
+
                 function submitInputs() {
-                    const vscode = acquireVsCodeApi();
+                    const value = "${input.text}";
+                    const labels = JSON.parse('${labels}');
+
                     const apiName = document.getElementById('apiName').value;
                     const category = document.getElementById('category').value;
                     const language = document.getElementById('language').value;
                     const shortDescription = document.getElementById('shortDescription').value;
                     const isProtected = document.getElementById('isProtected').checked;
+                    const apiNameMessage = document.getElementById('apiNameMessage');
+                    const isDuplicate = labels.some((existingLabel) => existingLabel.fullName._text === apiName && existingLabel.value._text !== value);
 
-                    vscode.postMessage({ command: 'submitInputs', inputs: { apiName, category, language, shortDescription, isProtected } });
+                    if(isDuplicate) {
+                        apiNameMessage.innerText = 'Duplicate Full Name';
+                        apiNameMessage.className = 'error';
+                    } else {
+                        apiNameMessage.className = 'hide';
+                        vscode.postMessage({ command: 'submitInputs', inputs: { apiName, category, language, shortDescription, isProtected } });
+                    }
                 }
             `;
 
@@ -172,27 +199,38 @@ export default class {
                     <div class="form-container">
                         <div class="input-group">
                             <label for="apiName">Full Name</label>
-                            <input id="apiName" type="text" placeholder="Full Name" value="${input.apiName}" /><br>
+                            <div class="input-container">
+                                <input id="apiName" type="text" placeholder="Full Name" value="${input.apiName}" /><br>
+                                <div class="hide" id="apiNameMessage"></div>
+                            </div>
                         </div>
 
                         <div class="input-group">
                             <label for="category">Category</label>
-                            <input id="category" type="text" placeholder="Category" value="${input.category}" /><br>
+                            <div class="input-container">
+                                <input id="category" type="text" placeholder="Category" value="${input.category}" /><br>
+                            </div>
                         </div>
 
                         <div class="input-group">
                             <label for="language">Language</label>
-                            <input id="language" type="text" placeholder="Language" value="${input.language}" /><br>
+                            <div class="input-container">
+                                <input id="language" type="text" placeholder="Language" value="${input.language}" /><br>
+                            </div>
                         </div>
 
                         <div class="input-group">
                             <label for="shortDescription">Description</label>
-                            <input id="shortDescription" type="text" placeholder="Description" value="${input.shortDescription}" /><br>
+                            <div class="input-container">
+                                <input id="shortDescription" type="text" placeholder="Description" value="${input.shortDescription}" /><br>
+                            </div>
                         </div>
 
                         <div class="input-group">
                             <label for="isProtected">Protected</label>
-                            <input id="isProtected" type="checkbox" placeholder="Protected" checked=${input.isProtected} /><br>
+                            <div class="input-container">
+                                <input id="isProtected" type="checkbox" placeholder="Protected" checked=${input.isProtected} /><br>
+                            </div>
                         </div>
 
                         <button class="button" onclick="submitInputs()">Confirm</button>
@@ -243,6 +281,7 @@ export default class {
 // INNER
 
 interface WebviewInput {
+    text: string;
     apiName: string;
     category: string;
     shortDescription: string;
